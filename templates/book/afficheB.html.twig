@@ -1,0 +1,55 @@
+ {% extends 'base.html.twig' %}
+
+{% block title %}Hello ServiceController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+ 
+ 
+ <h1>List of books</h1>
+ {#Afficher un message « No Books found » s’il n’y a aucun livre à afficher#}
+ {% if books|length == 0 %}
+        <p>No Books found</p>
+    {% else %}
+   <table border="1">
+           <tr>
+               <th>Ref</th>
+               <th>Publication date</th>
+               <th>Title</th>
+               <th>Published</th>
+               <th>Category</th>
+               <th>Author</th>
+               <th>Actions</th>
+           </tr>
+           {% for book in books %}
+               {% if book.published %}
+                   <tr>
+                       <td>{{ book.ref }}</td>
+                       <td>{{ book.getFormattedPublicationDate()}}</td>
+                       <td>{{ book.title }}</td>
+                       <td>{{book.published}}</td>
+                       <td>{{ book.category }}</td>
+                       <td>{{ book.author.id }}</td>
+                       <td>
+                    <a href="{{ path('edit_book', {'id': book.ref}) }}">Edit</a>
+                    <a href="{{ path('delete_book', {'id': book.ref}) }}">Delete</a>
+                    <a href="{{ path('app_showB', {'id': book.ref}) }}">Show</a>
+
+                </td>
+                   </tr>
+               {% endif %}
+               
+           {% endfor %}
+
+   </table>
+    {% endif %}
+   </div>
+   <p>Number of published books : {{ books|length }}</p>
+   <p>Number of unpublished books : {{ unpublishedBooks|length }}</p>
+   
+{% endblock %}

@@ -24,10 +24,13 @@
                 <td>
                     <a href="{{ path('edit_author', {'id': author.id}) }}">Edit</a>
                     <a href="{{ path('delete_author', {'id': author.id}) }}">Delete</a>
+                    <a href="{{ path('app_show', {'id': author.id}) }}">Show</a>
+
                 </td>
             </tr>
         {% endfor %}
     </table>
-    
+                        <a href="{{ path('form_new') }}">Create New</a>
+
 </div>
 {% endblock %}

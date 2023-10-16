@@ -42,9 +42,10 @@ class AuthorController extends AbstractController
         ]);
     }
 
-    #[Route('/author/{n}', name: 'app_show')]
-    public function showAuthor($n){
-      return $this->render('author/show.html.twig',['name'=>$n]);
+    #[Route('/author/{id}', name: 'app_show')]
+    public function showAuthor($id,AuthorRepository $repoA){
+        $author=$repoA->find($id);
+      return $this->render('author/show.html.twig',['author'=>$author]);
     }
     #[Route('/list',name: 'list')]
     public function list(){
@@ -73,6 +74,7 @@ class AuthorController extends AbstractController
             'id' => $id
         ]);
     }
+            //afficher la liste des auteurs
     #[Route('/listAuthor', name: 'app_list')]
     public function affiche(AuthorRepository $ARepo, ManagerRegistry $doctrine): Response
     {
@@ -86,114 +88,78 @@ class AuthorController extends AbstractController
 
         ]);
     }
-    #[Route('/ajoutAuthor', name: 'app_ajout')]
-    /**
-     * Summary of ajout
-     * @param \App\Controller\Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function ajouter (Request $request)
-    {
-      $authors=new Author();
-      $authors->setUsername('Nour Salhi');
-      $authors->setEmail('salhi.nour@esprit.tn');
-      $em = $this->getDoctrine()->getManager();
-      $em->persist($authors);
-      $em->flush();
-      return new Response('author cree avec id :' .$authors->getId());
-    }
+   
+    //ajouter a partir d'un formulaire
     #[Route("/form/new", name:'form_new')]
     
-   public function newUser(Request $request, EntityManagerInterface $entityManager)
+   public function newUser(Request $request,ManagerRegistry $manager)
    {
        $authors = new Author(); 
+       //ijecter le formualire
        $form = $this->createForm(AuthorType::class, $authors);
        $form->handleRequest($request);
-   
-       if ($form->isSubmitted() && $form->isValid()) {
-           // Enregistrez l'utilisateur dans la base de données
-           $entityManager->persist($authors);
-           $entityManager->flush();
-   
-           return $this->redirectToRoute('index'); // Redirigez vers la page de liste des utilisateurs
-       }
-   
-       return $this->render('author/form.html.twig', [
-           'form' => $form->createView(),
-       ]);
-   }
+       if($form->isSubmitted()){
+        $em=$manager->getManager();
+        $em->persist($authors);
+        $em->flush();
+        return $this->redirectToRoute('app_list');
+    }
 
+
+       return $this->render('author/form.html.twig', ['form' => $form->createView()]);  
+
+    }
+//ajouter author dans la base de maniere statique
     #[Route("/add-author", name: 'add_author')]
-    public function addAuthor(Request $request, EntityManagerInterface $entityManager): Response
+    public function addAuthor(ManagerRegistry $manager)
     {
         // Créez une nouvelle instance de l'auteur
         $authors = new Author();
+        //je veux ajouter ses deux attribut
+        $authors->setUsername('testStatic');
+        $authors->setEmail('test@gmail.com');
+        // recuperer le manager
+        $em=$manager->getManager();
+        $em->persist($authors);
+        $em->flush();
 
-        // Créez le formulaire en utilisant le formulaire AuthorType et l'auteur
-        $form = $this->createForm(AuthorType::class, $authors);
-
-        // Gérez la soumission du formulaire
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Enregistrez l'auteur dans la base de données
-            $entityManager->persist($authors);
-            $entityManager->flush();
-
-            // Redirigez vers une page de confirmation ou une autre page
-            return $this->redirectToRoute('app_list'); // Redirigez vers la page d'accueil, vous pouvez la personnaliser
+            return new Response('Author added succesfully');
         }
 
-        // Affichez le formulaire dans une vue Twig
-        return $this->render('author/form.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    }
-
+//modifier le formulaire
     #[Route("/edit-author/{id}", name: 'edit_author')]
-public function editAuthor($id, Request $request): Response
+public function editAuthor($id, Request $request,AuthorRepository $rep,ManagerRegistry $manager)
 {
-    $entityManager = $this->getDoctrine()->getManager();
-    $authors = $entityManager->getRepository(Author::class)->find($id);
-
-    if (!$authors) {
-        throw $this->createNotFoundException('Aucun auteur trouvé pour l\'ID : ' . $id);
-    }
-
+   //chercher l'author
+    $authors = $rep->find($id);
+   //creer le formulaire
     $form = $this->createForm(AuthorType::class, $authors);
     $form->handleRequest($request);
+       if($form->isSubmitted()){
+        $em=$manager->getManager();
+        $em->persist($authors);
+        $em->flush();
+        return $this->redirectToRoute('app_list');}
+    return $this->render('author/edit.html.twig', ['form' => $form->createView(), ]);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Les informations de l\'auteur ont été mises à jour avec succès.');
-
-        return $this->redirectToRoute('app_list'); // Redirigez vers la liste des auteurs ou une autre page
-    }
-
-    return $this->render('author/form.html.twig', [
-        'form' => $form->createView(),
-    ]);
 }
+
 #[Route("/delete-author/{id}", name: 'delete_author')]
-public function deleteAuthor($id, EntityManagerInterface $entityManager): Response
+public function deleteAuthor(Request $request,$id, ManagerRegistry $manager,AuthorRepository $authorRepository): Response
 {
     // Récupérez l'auteur depuis la base de données en utilisant l'ID
-    $authors = $entityManager->getRepository(Author::class)->find($id);
+    $authors = $authorRepository->find($id);
 
-    if (!$authors) {
-        throw $this->createNotFoundException('Aucun auteur trouvé pour l\'ID : ' . $id);
-    }
 
+    //injecter
+    $em =$manager->getManager();
     // Supprimez l'auteur
-    $entityManager->remove($authors);
-    $entityManager->flush();
-
-    $this->addFlash('success', 'L\'auteur a été supprimé avec succès.');
-
+    $em->remove($authors);
+    $em->flush();
 
     return $this->redirectToRoute('app_list'); 
 }
+
 }
 
 
