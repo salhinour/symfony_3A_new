@@ -108,15 +108,6 @@ class Book
 
         return $this;
     }
-    // méthode pour formater la date de publication dans votre classe Book  pour pouvoir utiliser le type date
-    public function getFormattedPublicationDate(): string
-    {
-        if ($this->publicationDate instanceof DateTime) {
-            return $this->publicationDate->format('Y-m-d');
-        }
-
-        return '';
-    }
 
 	
 }

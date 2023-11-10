@@ -1,4 +1,31 @@
-<h1>Book</h1>
-{{book.title }}
+{#<h1>Book</h1>
+{{book.title}}
 {{book.getFormattedPublicationDate()}}
-{{book.author}}
+{{book.author}}#}
+{{ form(form) }}
+ <table border="1">
+           <tr>
+               <th>Title</th>
+                <th>Category</th>
+               <th>Publication date</th>
+               <th>Published</th>
+               <th>Author</th>
+               <th>Actions</th>
+
+              
+           </tr>
+ {% for book in books %}
+            <tr>
+                <td>{{book.title}}</td>
+                 <td>{{book.category}}</td>
+                <td>{{ book.publicationDate()|date('y-m-d')}}</td>
+               <td>{{book.published}}</td>
+                <td>{{book.author}}</td>
+             <td>
+                            <a href="{{ path('edit_book', {'id': book.ref}) }}">edit</a>
+                            <a href="{{ path('delete_book', {'id': book.ref}) }}">delete</a>
+                            <a href="{{ path('app_showB', {'id': book.ref}) }}">show</a>
+                        </td>
+            </tr>
+        {% endfor %}
+        </table>

@@ -45,4 +45,44 @@ class AuthorRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+
+//querybuilder
+//afficher la liste des auteurs par ordre alphabétique des adresses email.
+public function showAllAuthorsOrderByEmail()
+    {
+        return $this->createQueryBuilder('a')
+            ->orderBy('a.email','DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    //supprimer les auteur dont le nb book =0
+
+    public function deleteAuthors()
+    {
+        $em = $this->getEntityManager();
+        $qb = $em->createQueryBuilder();
+        $qb->delete('App\Entity\Author', 'a');
+        return $qb->getQuery()->getResult();
+    }
+//DQL
+//recherche dans la liste des auteurs permettant de rechercher la liste des auteurs dont le nombre de livres est compris entre deux valeurs 
+    public function SearchAuthorDQL($min,$max){
+        $em=$this->getEntityManager();
+        return $em->createQuery(
+            'select a from App\Entity\Author a WHERE 
+            a.nb_books BETWEEN ?1 AND ?2')
+            ->setParameter(1,$min)
+            ->setParameter(2,$max)->getResult();
+    }
+    
+//supprimer les auteur dont le nb book =0
+    public function DeleteAuthor(){
+        $em=$this->getEntityManager();
+        return $em->createQuery(
+            'DELETE App\Entity\Author a WHERE a.nb_books = 0')   //si suppression normal j'afface le where et ce qui es apres
+        ->getResult();
+    }
+
 }

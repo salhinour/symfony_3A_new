@@ -1,4 +1,4 @@
- {% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 {% block title %}Hello ServiceController!{% endblock %}
 
@@ -11,25 +11,30 @@
 <div class="example-wrapper">
  
  
- <h1>List of books</h1>
+ <h1>List books</h1>
+{{ form_start(f)}}
+<b>{{ form_label(f.ref)}}:</b>
+{{ form_widget(f.ref)}}
+    {{ form_widget(f.search)}}
+    {{ form_end(f)}}
  {#Afficher un message « No Books found » s’il n’y a aucun livre à afficher#}
  {% if books|length == 0 %}
         <p>No Books found</p>
-   {% else %}
+    {% else %}
    <table border="1">
            <tr>
-               <td>Ref</th>
-               <td>Publication date</td>
-               <td>Title</td>
-               <td>Published</td>
-               <td>Category</td>
-               <td>Author</td>
-               <td>Actions</td>
+               <th>Ref</th>
+               <th>Publication date</th>
+               <th>Title</th>
+               <th>Published</th>
+               <th>Category</th>
+               <th>Author</th>
+               <th>Actions</th>
            </tr>
            {% for book in books %}
                    <tr>
                        <td>{{ book.ref }}</td>
-                       <td>{{ book.publicationDate()|date('Y-m-d')}}</td>
+                       <td>{{ book.publicationDate|date('Y-m-d')}}</td>
                        <td>{{ book.title }}</td>
                        <td>{{book.published}}</td>
                        <td>{{ book.category }}</td>
@@ -39,14 +44,11 @@
                     <a href="{{ path('delete_book', {'id': book.ref}) }}">Delete</a>
                     <a href="{{ path('app_showB', {'id': book.ref}) }}">Show</a>
                        </td>
-                   </tr>
+                   </tr>   
            {% endfor %}
-
    </table>
-   {% endif %} 
-      <p>Number of published books : {{ books|length }}</p>
-   <p>Number of unpublished books : {{ unpublishedBooks|length }}</p>
+    {% endif %}
    </div>
- 
+   
    
 {% endblock %}

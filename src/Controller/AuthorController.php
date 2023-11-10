@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Author;
 use App\Form\AuthorType; // Ajout de l'importation de la classe AuthorType
+use App\Form\SearchMinMaxType;
 use App\Repository\AuthorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -41,7 +42,7 @@ class AuthorController extends AbstractController
             'controller_name' => 'AuthorController',
         ]);
     }
-
+//show author
     #[Route('/author/{id}', name: 'app_show')]
     public function showAuthor($id,AuthorRepository $repoA){
         $author=$repoA->find($id);
@@ -78,14 +79,11 @@ class AuthorController extends AbstractController
     #[Route('/listAuthor', name: 'app_list')]
     public function affiche(AuthorRepository $ARepo, ManagerRegistry $doctrine): Response
     {
-
         $em = $doctrine->getManager();
         $authors = $ARepo->findAll();
-
         return $this->render('author/affiche.html.twig', [
 
             'authors' => $authors
-
         ]);
     }
    
@@ -104,11 +102,26 @@ class AuthorController extends AbstractController
         $em->flush();
         return $this->redirectToRoute('app_list');
     }
-
-
        return $this->render('author/form.html.twig', ['form' => $form->createView()]);  
-
     }
+
+    //modifier le formulaire
+    #[Route("/edit-author/{id}", name: 'edit_author')]
+public function editAuthor($id, Request $request,AuthorRepository $rep,ManagerRegistry $manager)
+{
+   //chercher l'author
+    $authors = $rep->find($id);
+   //creer le formulaire
+    $form = $this->createForm(AuthorType::class, $authors);
+    $form->handleRequest($request);
+       if($form->isSubmitted()){
+        $em=$manager->getManager();
+        $em->persist($authors);
+        $em->flush();
+        return $this->redirectToRoute('app_list');}
+    return $this->render('author/edit.html.twig', ['form' => $form->createView(), ]);
+
+}
 //ajouter author dans la base de maniere statique
     #[Route("/add-author", name: 'add_author')]
     public function addAuthor(ManagerRegistry $manager)
@@ -126,24 +139,8 @@ class AuthorController extends AbstractController
             return new Response('Author added succesfully');
         }
 
-//modifier le formulaire
-    #[Route("/edit-author/{id}", name: 'edit_author')]
-public function editAuthor($id, Request $request,AuthorRepository $rep,ManagerRegistry $manager)
-{
-   //chercher l'author
-    $authors = $rep->find($id);
-   //creer le formulaire
-    $form = $this->createForm(AuthorType::class, $authors);
-    $form->handleRequest($request);
-       if($form->isSubmitted()){
-        $em=$manager->getManager();
-        $em->persist($authors);
-        $em->flush();
-        return $this->redirectToRoute('app_list');}
-    return $this->render('author/edit.html.twig', ['form' => $form->createView(), ]);
 
-}
-
+//supprimer un author
 #[Route("/delete-author/{id}", name: 'delete_author')]
 public function deleteAuthor(Request $request,$id, ManagerRegistry $manager,AuthorRepository $authorRepository): Response
 {
@@ -158,6 +155,18 @@ public function deleteAuthor(Request $request,$id, ManagerRegistry $manager,Auth
     $em->flush();
 
     return $this->redirectToRoute('app_list'); 
+}
+#[Route('/researchAuthor', name: 'researchAuthor')]
+public function Research( AuthorRepository $repo, Request $request)
+{   $author= new Author();
+    $form=$this->createForm(SearchMinMaxType::class,$author);
+    $form->handleRequest($request);
+    if($form->isSubmitted()){
+        
+        return $this->render('author/affiche.html.twig', [  'author' => $repo->showDQL($author->getNb_books()), 'form'=>$form->createView() ]);
+    
+    }
+    return $this->render('author/affiche.html.twig', [  'author' => $repo->findAll(), 'form'=>$form->createView() ]);
 }
 
 }
